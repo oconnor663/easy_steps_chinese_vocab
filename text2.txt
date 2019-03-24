@@ -1,4 +1,4 @@
-# 2.1
+# 1.1
 国|guò|pass; particle
 去过|qùguo|have been to
 国家|guójiā|country
@@ -16,7 +16,7 @@
 汉语|hànyǔ|Chinese (language)
 一点儿|yìdiǎnr|a little bit
 
-# 2.2
+# 1.2
 西班牙|xībānyá|Spain
 西班牙人|xībānyárén|Spanish (people)
 西班牙语|xībānyáyǔ|Spanish (language)
@@ -32,3 +32,33 @@
 朋|péng|friend
 友|yǒu|friend
 朋友|péngyǒu|friend
+
+# 2.1
+有的|yǒude|some
+还|hái|also
+数|shù|number
+数学|shùxué|maths
+体|tǐ|body
+育|yù|educate
+体育|tǐyù|physical training; PE
+美|měi|beautiful
+术|shù|art; skill
+美术|měishù|art
+音|yīn|sound; tone
+乐|yuè|music
+音乐|yīnyuè|music
+脑|nǎo|brain
+电脑|diànnǎo|computer
+
+# 2.2
+门|mén|door; measure word
+科|kē|a branch of academic study
+科学|kēxué|science
+历|lì|experience; calendar
+史|shǐ|history
+历史|lìshǐ|history
+理|lǐ|reason; natural science
+地理|dìlǐ|geography
+戏|xì|play; drama
+剧|jù|play; drama; opera
+戏剧|xìjù|drama; play
