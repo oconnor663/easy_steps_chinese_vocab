@@ -4,6 +4,31 @@ import genanki
 import os
 import sys
 
+CSS = """\
+.card {
+    font-size: 40px;
+    text-align: center;
+}
+
+.hanzi {
+    font-size: 80px;
+}
+"""
+
+QFMT1 = """<span class="hanzi">{{Hanzi}}</span>"""
+AFMT1 = """\
+{{FrontSide}}
+<hr id="answer">{{Pinyin}}
+<hr>{{Definition}}
+"""
+
+QFMT2 = """{{Definition}}"""
+AFMT2 = """\
+{{FrontSide}}
+<hr id="answer"><span class="hanzi">{{Hanzi}}</span>
+<hr>{{Pinyin}}
+"""
+
 
 class EasyStepsNote(genanki.Note):
     @property
@@ -29,19 +54,18 @@ def make_model(deck_id):
         ],
         templates=[
             {
-                'name':
-                'Card 1',
-                'qfmt':
-                '{{Hanzi}}',
-                'afmt':
-                '{{FrontSide}}<hr id="answer">{{Pinyin}}<hr>{{Definition}}',
+                'name': 'Card 1',
+                'qfmt': QFMT1,
+                'afmt': AFMT1,
             },
             {
                 'name': 'Card 2',
-                'qfmt': '{{Definition}}',
-                'afmt': '{{FrontSide}}<hr id="answer">{{Hanzi}}<hr>{{Pinyin}}',
+                'qfmt': QFMT2,
+                'afmt': AFMT2,
             },
-        ])
+        ],
+        css=CSS,
+    )
 
 
 def split_line(line):
