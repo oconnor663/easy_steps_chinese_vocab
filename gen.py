@@ -1,8 +1,84 @@
 #! /usr/bin/env python3
 
+from collections import namedtuple
 import genanki
-import os
+import os.path as path
 import sys
+
+DictEntry = namedtuple("DictEntry",
+                       ["simp", "trads", "pinyins", "definitions"])
+
+ACCENTS = {
+    "1": "\u0304",
+    "2": "\u0301",
+    "3": "\u030C",
+    "4": "\u0300",
+}
+
+
+def find_accent_index(part):
+    lowerpart = part.lower()
+    for c in "aeiou":
+        i = lowerpart.find(c)
+        if i != -1:
+            # +1 because the combining character goes after
+            return i + 1
+    return -1
+
+
+def format_pinyin(pinyin):
+    # Pinyin for proper nouns tends to be uppercased. lower() normalizes that.
+    parts = pinyin.lower().split(" ")
+    new_parts = []
+    for part in parts:
+        if part[-1] in ("1", "2", "3", "4"):
+            i = find_accent_index(part)
+            if i != -1:
+                accent = ACCENTS[part[-1]]
+                # Insert the accent and drop the number at the end.
+                new_parts.append(part[:i] + accent + part[i:-1])
+            else:
+                # There are a few cases like "m2" for an interjection.
+                new_parts.append(part)
+        elif part[-1] == "5":
+            # This is the neutral tone. Just drop the 5.
+            new_parts.append(part[:-1])
+        else:
+            new_parts.append(part)
+    return " ".join(new_parts)
+
+
+def parse_rest(rest):
+    assert rest[0] == "["
+    [pinyin, slash_defs] = rest[1:].split("]", 1)
+    definitions = [
+        d.strip() for d in slash_defs.split("/") if d and not d.isspace()
+    ]
+    return (pinyin, definitions)
+
+
+def load_cedict():
+    dict_path = path.join(path.dirname(__file__), "cc_cedict.txt")
+    with open(dict_path) as f:
+        d = {}
+        for line in f:
+            if line.startswith("#"):
+                continue
+            trad, simp, rest = line.split(" ", 2)
+            unformatted_pinyin, definitions = parse_rest(rest)
+            pinyin = format_pinyin(unformatted_pinyin)
+            entry = d.get(simp)
+            if not entry:
+                entry = DictEntry(simp, [trad], [pinyin], definitions)
+                d[simp] = entry
+            else:
+                if trad not in entry.trads:
+                    entry.trads.append(trad)
+                if pinyin not in entry.pinyins:
+                    entry.pinyins.append(pinyin)
+                entry.definitions.extend(definitions)
+    return d
+
 
 CSS = """\
 .card {
@@ -82,15 +158,61 @@ def parse_text(text):
     return deck_name, int(deck_id_str), notes
 
 
-def main():
-    input_path = sys.argv[1]
-    text = open(input_path).read()
-    deck_name, deck_id, notes = parse_text(text)
+def format_hanzi(simp, trads):
+    dashed_trads = []
+    for trad in trads:
+        if trad == simp:
+            continue
+        dashed = ""
+        assert (len(simp) == len(trad)
+                ), "is {} the traditional form of {}?".format(
+                    repr(simp), repr(trad))
+        for i in range(len(simp)):
+            if simp[i] == trad[i]:
+                dashed += "-"
+            else:
+                dashed += trad[i]
+        dashed_trads.append(dashed)
+    if dashed_trads:
+        return simp + "（" + "/".join(dashed_trads) + "）"
+    else:
+        return simp
+
+
+def make_deck(deck_name, deck_id, notes, cedict):
     deck = genanki.Deck(deck_id, deck_name)
     model = make_model(deck_id)
     for note in notes:
-        deck.add_note(EasyStepsNote(model=model, fields=note))
-    output_path = os.path.splitext(input_path)[0] + ".apkg"
+        simp = note[0]
+        # If the entry isn't in the dictionary (like "跟...一样"), use an empty
+        # entry and assume the deck will fill in the fields.
+        entry = cedict.get(simp) or DictEntry(simp, [], [], [])
+        trads = entry.trads
+        if len(note) >= 2 and note[1]:
+            trads = [note[1]]
+        pinyins = entry.pinyins
+        if len(note) >= 3 and note[2]:
+            pinyins = [note[2]]
+        definitions = entry.definitions
+        if len(note) >= 4 and note[3]:
+            definitions = [note[3]]
+        fields = [
+            format_hanzi(simp, trads),
+            ", ".join(pinyins),
+            " / ".join(definitions),
+        ]
+        print(fields[0], "<" + fields[1] + ">", fields[2])
+        deck.add_note(EasyStepsNote(model=model, fields=fields))
+    return deck
+
+
+def main():
+    cedict = load_cedict()
+    input_path = sys.argv[1]
+    text = open(input_path).read()
+    deck_name, deck_id, notes = parse_text(text)
+    deck = make_deck(deck_name, deck_id, notes, cedict)
+    output_path = path.splitext(input_path)[0] + ".apkg"
     genanki.Package(deck).write_to_file(output_path)
     print("created", output_path)
 
