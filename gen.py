@@ -188,14 +188,12 @@ def make_deck(deck_name, deck_id, notes, cedict):
         # entry and assume the deck will fill in the fields.
         entry = cedict.get(simp) or DictEntry(simp, [], [], [])
         trads = entry.trads
-        if len(note) >= 2 and note[1]:
-            trads = [note[1]]
         pinyins = entry.pinyins
-        if len(note) >= 3 and note[2]:
-            pinyins = [note[2]]
+        if len(note) >= 2 and note[1]:
+            pinyins = [note[1]]
         definitions = entry.definitions
-        if len(note) >= 4 and note[3]:
-            definitions = [note[3]]
+        if len(note) >= 3 and note[2]:
+            definitions = [note[2]]
         fields = [
             format_hanzi(simp, trads),
             ", ".join(pinyins),
