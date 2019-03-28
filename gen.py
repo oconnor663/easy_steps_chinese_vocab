@@ -53,10 +53,25 @@ def parse_rest(rest):
     [pinyin, slash_defs] = rest[1:].split("]", 1)
     # The "CL:" definitions are about classifiers, and they're too noisy.
     definitions = [
-        d.strip() for d in slash_defs.split("/")
-        if d and not d.isspace() and not d.startswith("CL:")
+        d.strip() for d in slash_defs.split("/") if d and not d.isspace()
     ]
     return (pinyin, definitions)
+
+
+def filter_definitions(definitions):
+    ret = []
+    # Filter out definitions that tend to add too much noise. If none are left,
+    # the caller will drop this entry entirely.
+    bad_prefixes = [
+        "variant of ",
+        "old variant of ",
+        "CL:",
+    ]
+    for d in definitions:
+        if any(d.startswith(prefix) for prefix in bad_prefixes):
+            continue
+        ret.append(d)
+    return ret
 
 
 def load_cedict():
@@ -67,7 +82,11 @@ def load_cedict():
             if line.startswith("#"):
                 continue
             trad, simp, rest = line.split(" ", 2)
-            unformatted_pinyin, definitions = parse_rest(rest)
+            unformatted_pinyin, unfiltered_definitions = parse_rest(rest)
+            definitions = filter_definitions(unfiltered_definitions)
+            if not definitions:
+                # All the definitions in this line got filtered out. Skip it.
+                continue
             pinyin = format_pinyin(unformatted_pinyin)
             entry = d.get(simp)
             if not entry:
@@ -84,13 +103,13 @@ def load_cedict():
 
 CSS = """\
 .card {
-    font-size: 40px;
+    font-size: 32px;
     font-family: arial;
     text-align: center;
 }
 
 .hanzi {
-    font-size: 80px;
+    font-size: 64px;
 }
 """
 
@@ -182,7 +201,7 @@ def format_hanzi(simp, trads):
                 dashed += trad[i]
         dashed_trads.append(dashed)
     if dashed_trads:
-        return simp + "<br>(" + "/".join(dashed_trads) + ")"
+        return simp + "<br>" + " / ".join(dashed_trads)
     else:
         return simp
 
@@ -209,6 +228,7 @@ def make_deck(deck_name, deck_id, notes, cedict):
             ", ".join(pinyins),
             " / ".join(definitions),
         ]
+        # print(fields)
         deck.add_note(EasyStepsNote(model=model, fields=fields))
     return deck
 
