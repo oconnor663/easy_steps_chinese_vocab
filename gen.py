@@ -117,18 +117,22 @@ CSS = """\
 }
 """
 
-QFMT1 = """<span class="hanzi">{{SimpAndTrad}}</span>"""
+QFMT1 = """<span class="hanzi">{{Simplified}}</span>"""
 AFMT1 = """\
-{{FrontSide}}
-<hr id="answer">{{Pinyin}}
-<hr>{{Definition}}
+<span class="hanzi">{{SimpAndTrad}}</span>
+<hr id="answer">
+{{Pinyin}}
+<hr>
+{{Definition}}
 """
 
 QFMT2 = """{{Definition}}"""
 AFMT2 = """\
-{{FrontSide}}
-<hr id="answer"><span class="hanzi">{{SimpAndTrad}}</span>
-<hr>{{Pinyin}}
+{{Definition}}
+<hr id="answer">
+<span class="hanzi">{{SimpAndTrad}}</span>
+<hr>
+{{Pinyin}}
 """
 
 
@@ -196,7 +200,7 @@ def format_hanzi(simp, trads):
             continue
         dashed = ""
         assert (len(simp) == len(trad)
-                ), "is {} the traditional form of {}?".format(
+                ), "is {} really the traditional form of {}?".format(
                     repr(simp), repr(trad))
         for i in range(len(simp)):
             if simp[i] == trad[i]:
@@ -205,7 +209,7 @@ def format_hanzi(simp, trads):
                 dashed += trad[i]
         dashed_trads.append(dashed)
     if dashed_trads:
-        return (simp + """<br><span class="traditional">""" +
+        return (simp + """<hr><span class="traditional">""" +
                 " / ".join(dashed_trads) + "</span>")
     else:
         return simp
