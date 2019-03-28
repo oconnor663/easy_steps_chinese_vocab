@@ -184,15 +184,15 @@ def make_deck(deck_name, deck_id, notes, cedict):
     model = make_model(deck_id)
     for note in notes:
         simp = note[0]
-        # If the entry isn't in the dictionary (like "跟...一样"), use an empty
-        # entry and assume the deck will fill in the fields.
-        entry = cedict.get(simp) or DictEntry(simp, [], [], [])
-        trads = entry.trads
-        pinyins = entry.pinyins
-        if len(note) >= 2 and note[1]:
+        if len(note) == 1:
+            assert simp in cedict, "{} is missing from cedict".format(simp)
+            entry = cedict[simp]
+            trads = entry.trads
+            pinyins = entry.pinyins
+            definitions = entry.definitions
+        else:
+            trads = []
             pinyins = [note[1]]
-        definitions = entry.definitions
-        if len(note) >= 3 and note[2]:
             definitions = [note[2]]
         fields = [
             format_hanzi(simp, trads),
