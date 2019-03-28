@@ -51,8 +51,10 @@ def format_pinyin(pinyin):
 def parse_rest(rest):
     assert rest[0] == "["
     [pinyin, slash_defs] = rest[1:].split("]", 1)
+    # The "CL:" definitions are about classifiers, and they're too noisy.
     definitions = [
-        d.strip() for d in slash_defs.split("/") if d and not d.isspace()
+        d.strip() for d in slash_defs.split("/")
+        if d and not d.isspace() and not d.startswith("CL:")
     ]
     return (pinyin, definitions)
 
@@ -83,6 +85,7 @@ def load_cedict():
 CSS = """\
 .card {
     font-size: 40px;
+    font-family: arial;
     text-align: center;
 }
 
@@ -91,7 +94,7 @@ CSS = """\
 }
 """
 
-QFMT1 = """<span class="hanzi">{{Hanzi}}</span>"""
+QFMT1 = """<span class="hanzi">{{SimpAndTrad}}</span>"""
 AFMT1 = """\
 {{FrontSide}}
 <hr id="answer">{{Pinyin}}
@@ -101,7 +104,7 @@ AFMT1 = """\
 QFMT2 = """{{Definition}}"""
 AFMT2 = """\
 {{FrontSide}}
-<hr id="answer"><span class="hanzi">{{Hanzi}}</span>
+<hr id="answer"><span class="hanzi">{{SimpAndTrad}}</span>
 <hr>{{Pinyin}}
 """
 
@@ -109,7 +112,7 @@ AFMT2 = """\
 class EasyStepsNote(genanki.Note):
     @property
     def guid(self):
-        # Only use the hanzi as a card identifier.
+        # Only use the simplified hanzi as a card identifier.
         return genanki.guid_for(self.fields[0])
 
 
@@ -118,8 +121,13 @@ def make_model(deck_id):
         deck_id + 1,
         'Easy Steps Model',
         fields=[
+            # This field is used for the stable ID of the card.
             {
-                'name': 'Hanzi'
+                'name': 'Simplified'
+            },
+            # This field is used for display. It's formatting can change.
+            {
+                'name': 'SimpAndTrad'
             },
             {
                 'name': 'Pinyin'
@@ -174,7 +182,7 @@ def format_hanzi(simp, trads):
                 dashed += trad[i]
         dashed_trads.append(dashed)
     if dashed_trads:
-        return simp + "（" + "/".join(dashed_trads) + "）"
+        return simp + "<br>(" + "/".join(dashed_trads) + ")"
     else:
         return simp
 
@@ -191,15 +199,16 @@ def make_deck(deck_name, deck_id, notes, cedict):
             pinyins = entry.pinyins
             definitions = entry.definitions
         else:
+            assert len(note) == 3
             trads = []
             pinyins = [note[1]]
             definitions = [note[2]]
         fields = [
+            simp,
             format_hanzi(simp, trads),
             ", ".join(pinyins),
             " / ".join(definitions),
         ]
-        print(fields[0], "<" + fields[1] + ">", fields[2])
         deck.add_note(EasyStepsNote(model=model, fields=fields))
     return deck
 
