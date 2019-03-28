@@ -83,6 +83,9 @@ def load_cedict():
                 continue
             trad, simp, rest = line.split(" ", 2)
             unformatted_pinyin, unfiltered_definitions = parse_rest(rest)
+            if unformatted_pinyin[0].isupper():
+                # Skip proper nouns.
+                continue
             definitions = filter_definitions(unfiltered_definitions)
             if not definitions:
                 # All the definitions in this line got filtered out. Skip it.
