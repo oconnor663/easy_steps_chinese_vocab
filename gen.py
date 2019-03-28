@@ -111,6 +111,10 @@ CSS = """\
 .hanzi {
     font-size: 64px;
 }
+
+.traditional {
+    font-size: 48px;
+}
 """
 
 QFMT1 = """<span class="hanzi">{{SimpAndTrad}}</span>"""
@@ -201,7 +205,8 @@ def format_hanzi(simp, trads):
                 dashed += trad[i]
         dashed_trads.append(dashed)
     if dashed_trads:
-        return simp + "<br>" + " / ".join(dashed_trads)
+        return (simp + """<br><span class="traditional">""" +
+                " / ".join(dashed_trads) + "</span>")
     else:
         return simp
 
@@ -212,15 +217,17 @@ def make_deck(deck_name, deck_id, notes, cedict):
     for note in notes:
         simp = note[0]
         if len(note) == 1:
-            assert simp in cedict, "{} is missing from cedict".format(simp)
-            entry = cedict[simp]
+            entry = cedict.get(simp)
+            if not entry:
+                print("NEEDS DEFINITION:", simp)
+                continue
             trads = entry.trads
             pinyins = entry.pinyins
             definitions = entry.definitions
         else:
             assert len(note) == 3
             trads = []
-            pinyins = [note[1]]
+            pinyins = [format_pinyin(note[1])]
             definitions = [note[2]]
         fields = [
             simp,
