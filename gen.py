@@ -15,10 +15,25 @@ ACCENTS = {
     "4": "\u0300",
 }
 
+ACCENT_TARGETS = [
+    "a",
+    "e",
+    "i",
+    "o",
+    # This is subtle. We want accent markers to go *after* colons (which are
+    # going to get directly replaced with umlaut markers later), so that
+    # character rendering puts them on top. The easiest way to achieve this is
+    # to target the colon with higher precedence than the "u".
+    ":",
+    "u",
+]
+
+UMLAUT = "\u0308"
+
 
 def find_accent_index(part):
     lowerpart = part.lower()
-    for c in "aeiou":
+    for c in ACCENT_TARGETS:
         i = lowerpart.find(c)
         if i != -1:
             # +1 because the combining character goes after
@@ -26,9 +41,16 @@ def find_accent_index(part):
     return -1
 
 
+def format_umlaut(part):
+    # Unicode combining characters go after the character they combine with, so
+    # a straight replacement is good enough for this case. (Unlike the tone
+    # marker, where we need to search for the right vowel to mark.)
+    return part.replace(":", UMLAUT)
+
+
 def format_pinyin(pinyin):
     # Pinyin for proper nouns tends to be uppercased. lower() normalizes that.
-    parts = pinyin.lower().split(" ")
+    parts = pinyin.lower().split()
     new_parts = []
     for part in parts:
         if part[-1] in ("1", "2", "3", "4"):
@@ -45,7 +67,7 @@ def format_pinyin(pinyin):
             new_parts.append(part[:-1])
         else:
             new_parts.append(part)
-    return " ".join(new_parts)
+    return format_umlaut(" ".join(new_parts))
 
 
 def parse_rest(rest):
