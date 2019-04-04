@@ -142,22 +142,22 @@ CSS = """\
 }
 """
 
-QFMT1 = """<span class="hanzi">{{Simplified}}</span>"""
+QFMT1 = """{{Definition}}"""
 AFMT1 = """\
-<span class="hanzi">{{SimpAndTrad}}</span>
-<hr id="answer">
-{{Pinyin}}
-<hr>
 {{Definition}}
+<hr id="answer">
+<span class="hanzi">{{SimpAndTrad}}</span>
+<hr>
+{{Pinyin}}
 """
 
-QFMT2 = """{{Definition}}"""
+QFMT2 = """<span class="hanzi">{{Simplified}}</span>"""
 AFMT2 = """\
-{{Definition}}
-<hr id="answer">
 <span class="hanzi">{{SimpAndTrad}}</span>
-<hr>
+<hr id="answer">
 {{Pinyin}}
+<hr>
+{{Definition}}
 """
 
 
@@ -190,12 +190,12 @@ def make_model(deck_id):
         ],
         templates=[
             {
-                'name': 'Card 1',
+                'name': 'From English',
                 'qfmt': QFMT1,
                 'afmt': AFMT1,
             },
             {
-                'name': 'Card 2',
+                'name': 'From Hanzi',
                 'qfmt': QFMT2,
                 'afmt': AFMT2,
             },
